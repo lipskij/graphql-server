@@ -12,19 +12,19 @@ const sequencePromises = function (promises) {
 };
 
 const createDatabase = () => {
-  let promises = [tables.users, tables.userFriends, tables.posts].map((table) => {
+  let promises = [tables.users, tables.usersFriends, tables.posts].map((table) => {
     return () => database.getSql(table.create().toQuery());
   });
   return sequencePromises(promises);
 };
 
 const insertData = () => {
-  let { users, posts, userFriends } = data;
+  let { users, posts, usersFriends } = data;
 
   let queries = [
     tables.users.insert(users).toQuery(),
     tables.posts.insert(posts).toQuery(),
-    tables.userFriends.insert(userFriends).toQuery(),
+    tables.usersFriends.insert(usersFriends).toQuery(),
   ];
 
   let promises = queries.map((query) => {
