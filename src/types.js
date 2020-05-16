@@ -4,9 +4,11 @@ import {
   GraphQLID,
   GraphQLString,
   GraphQLNonNull,
+  GraphQLList,
 } from 'graphql';
 
 import * as tables from './tables';
+import * as loaders from './loaders';
 
 export const NodeInterface = new GraphQLInterfaceType({
   name: 'Node',
@@ -29,17 +31,27 @@ const resolveId = (source) => {
 export const UserType = new GraphQLObjectType({
   name: 'User',
   interfaces: [ NodeInterface ],
-  fields: {
-    id: {
-      type: new GraphQLNonNull(GraphQLID),
-      resolve: resolveId
-    },
-    name: {
-      type: new GraphQLNonNull(GraphQLString)
-    },
-    about: {
-      type: new GraphQLNonNull(GraphQLString)
-    }
+  fields: () => {
+    return {
+      id: {
+        type: new GraphQLNonNull(GraphQLID),
+        resolve: resolveId
+      },
+      name: { type: new GraphQLNonNull(GraphQLString) },
+      about: { type: new GraphQLNonNull(GraphQLString) },
+      friends: {
+        type: new GraphQLList(UserType),
+        resolve(source) {
+          return loaders.getFriendIdsForUser(source).then((rows) => {
+            const promises = rows.map((row) => {
+              const friendNodeId = tables.dbIdToNodeId(row.user_id_b, row.__tableName);
+              return loaders.getNodeById(friendNodeId);
+            });
+            return Promise.all(promises);
+          })
+        }
+      }
+    };
   }
 });
 

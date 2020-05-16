@@ -26,7 +26,7 @@ const RootQuery = new GraphQLObjectType({
 					type: new GraphQLNonNull(GraphQLID)
 				}
 			},
-			resolve(source, args) {
+			resolve(source, args ,context, info) {
 				return loaders.getNodeById(args.id);
 			}
 		}
